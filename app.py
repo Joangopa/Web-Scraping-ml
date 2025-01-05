@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-
+import sqlite3
 
 def fetch_page():
     url = "https://www.mercadolivre.com.br/tablet-samsung-galaxy-tab-s6-lite-2024-64gb-4gb-ram-wifi-cor-rosa/p/MLB35477124#polycard_client=search-nordic&wid=MLB4799262148&sid=search&searchVariation=MLB35477124&position=7&search_layout=grid&type=product&tracking_id=e717c71a-d935-45ea-967f-57e411ed29f0"
@@ -27,17 +27,40 @@ def parse_page(page_content):
         "timestamp": timestamp
     }
 
-def save_to_dataframe(product_info, df):
+def create_connection(db_name="tabS6lite_prices.db"):
+    "Conexao ao banco de dados"
+    conn = sqlite3.connect(db_name)
+    return conn
+
+def setup_database(conn):
+    "Cria tabela para o banco de dados"
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tabS6lite_prices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_name TEXT,
+            old_price INTEGER,
+            new_price INTEGER,
+            installment_price INTEGER,
+            timestamp TEXT
+        )
+    """)
+    conn.commit()
+
+
+def save_to_database(conn, product_info):
     new_row = pd.DataFrame(product_info, index=[0])
-    df = pd.concat([df, new_row], ignore_index=True)
-    return df
+    new_row.to_sql("tabS6lite_prices", conn, if_exists="append", index=False)
 
 if __name__ == "__main__":
+
+    conn = create_connection()
+    setup_database(conn)
 
     df = pd.DataFrame()
     while True:
         page_content = fetch_page()
         product_info = parse_page(page_content)
-        df = save_to_dataframe(product_info, df)
-        print(df)
+        save_to_database(conn, product_info)
+        print("Dados salvos:", product_info)
         time.sleep(10)
