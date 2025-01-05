@@ -1,8 +1,21 @@
+import asyncio
 import requests
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
 import sqlite3
+from telegram import Bot
+import os
+from dotenv import load_dotenv 
+
+load_dotenv()
+
+# Configura bot telegram
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+bot = Bot(token=TELEGRAM_TOKEN)
+
 
 def fetch_page():
     url = "https://www.mercadolivre.com.br/tablet-samsung-galaxy-tab-s6-lite-2024-64gb-4gb-ram-wifi-cor-rosa/p/MLB35477124#polycard_client=search-nordic&wid=MLB4799262148&sid=search&searchVariation=MLB35477124&position=7&search_layout=grid&type=product&tracking_id=e717c71a-d935-45ea-967f-57e411ed29f0"
@@ -58,8 +71,12 @@ def get_max_price(conn):
     max_price = cursor.fetchone()[0]
     return max_price
 
-if __name__ == "__main__":
+async def send_telegram_message(message):
+    await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
 
+
+async def main():
+    
     conn = create_connection()
     setup_database(conn)
 
@@ -70,13 +87,22 @@ if __name__ == "__main__":
         max_price = get_max_price(conn)
 
         current_price = product_info["new_price"]
+        
         if current_price > max_price:
             max_price = current_price
             print("Novo preço maior que o atual:", max_price)
+            await send_telegram_message(f"Novo preco maior que o atual: {max_price}")
         else:
             print("Mesmo preço máximo:", max_price)
+            await send_telegram_message(f"Mesmo preco maximo: {max_price}")
 
         save_to_database(conn, product_info)
         print("Dados salvos:", product_info)
-        time.sleep(10)
+        
+        # aguarda 10 segundos
+        await asyncio.sleep(10)
+    
+    #fecha conexao ao banco de dados
+    conn.close()
  
+asyncio.run(main())
