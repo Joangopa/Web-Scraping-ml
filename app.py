@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+import time
+import pandas as pd
 
 
 def fetch_page():
@@ -15,14 +17,27 @@ def parse_page(page_content):
     new_price: int = int(prices[1].get_text().replace(".", ""))
     installment_price: int = int(prices[2].get_text().replace(".", ""))
 
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+
     return {
         "product_name": product_name,
         "old_price": old_price,
         "new_price": new_price,
-        "installment_price": installment_price
+        "installment_price": installment_price,
+        "timestamp": timestamp
     }
 
+def save_to_dataframe(product_info, df):
+    new_row = pd.DataFrame(product_info, index=[0])
+    df = pd.concat([df, new_row], ignore_index=True)
+    return df
+
 if __name__ == "__main__":
-    page_content = fetch_page()
-    product_info = parse_page(page_content)
-    print(product_info)
+
+    df = pd.DataFrame()
+    while True:
+        page_content = fetch_page()
+        product_info = parse_page(page_content)
+        df = save_to_dataframe(product_info, df)
+        print(df)
+        time.sleep(10)
