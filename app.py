@@ -52,15 +52,31 @@ def save_to_database(conn, product_info):
     new_row = pd.DataFrame(product_info, index=[0])
     new_row.to_sql("tabS6lite_prices", conn, if_exists="append", index=False)
 
+def get_max_price(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(new_price) FROM tabS6lite_prices")
+    max_price = cursor.fetchone()[0]
+    return max_price
+
 if __name__ == "__main__":
 
     conn = create_connection()
     setup_database(conn)
 
-    df = pd.DataFrame()
     while True:
         page_content = fetch_page()
         product_info = parse_page(page_content)
+
+        max_price = get_max_price(conn)
+
+        current_price = product_info["new_price"]
+        if current_price > max_price:
+            max_price = current_price
+            print("Novo preço maior que o atual:", max_price)
+        else:
+            print("Mesmo preço máximo:", max_price)
+
         save_to_database(conn, product_info)
         print("Dados salvos:", product_info)
         time.sleep(10)
+ 
