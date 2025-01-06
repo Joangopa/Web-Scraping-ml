@@ -12,6 +12,8 @@ beautifulsoup4 = "^4.12.3"
 pandas = "^2.2.3"
 python-telegram-bot = "^21.10"
 python-dotenv = "^1.0.1"
+sqlalchemy = "^2.0.36"
+psycopg2-binary = "^2.9.10"
 
 
 [build-system]

@@ -2,3 +2,6 @@
 
 poetry.lock
 .env
+
+# outras versões 
+app_postgres_2.py
