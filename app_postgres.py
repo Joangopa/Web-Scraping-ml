@@ -3,7 +3,6 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import sqlite3
 from telegram import Bot
 import os
 from dotenv import load_dotenv
@@ -29,7 +28,7 @@ DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST
 engine = create_engine(DATABASE_URL)
 
 def fetch_page():
-    url = "https://www.mercadolivre.com.br/tablet-samsung-galaxy-tab-s6-lite-2024-64gb-4gb-ram-wifi-cor-rosa/p/MLB35477124#polycard_client=search-nordic&wid=MLB4799262148&sid=search&searchVariation=MLB35477124&position=7&search_layout=grid&type=product&tracking_id=e717c71a-d935-45ea-967f-57e411ed29f0"
+    url="https://www.mercadolivre.com.br/tablet-samsung-galaxy-tab-s9-fe-wifi-128gb-6gb-ram-tela-imersiva-de-109/p/MLB29064087#polycard_client=search-nordic&wid=MLB5219065102&sid=search&searchVariation=MLB29064087&position=4&search_layout=grid&type=product&tracking_id=b2444a3a-bead-44c7-8690-24039bba3141"
     response = requests.get(url)
     return response.text
 
@@ -66,7 +65,7 @@ def setup_database(conn):
     "Cria tabela para o banco de dados"
     cursor = conn.cursor()
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tabs6lite_prices (
+        CREATE TABLE IF NOT EXISTS product_prices (
             id SERIAL PRIMARY KEY,
             product_name TEXT,
             old_price INTEGER,
@@ -81,15 +80,15 @@ def setup_database(conn):
 
 def save_to_database(product_info):
     new_row = pd.DataFrame(product_info, index=[0])
-    new_row.to_sql("tabs6lite_prices", engine, if_exists="append", index=False)
+    new_row.to_sql("product_prices", engine, if_exists="append", index=False)
 
 def get_max_price(conn):
     "Retorna o preco mais alto registrado até o momento"
     cursor = conn.cursor()
     cursor.execute("""
         SELECT new_price, timestamp
-        FROM tabs6lite_prices
-        WHERE new_price = (SELECT MAX(new_price) FROM tabS6lite_prices);
+        FROM product_prices
+        WHERE new_price = (SELECT MAX(new_price) FROM product_prices);
     """)
     result = cursor.fetchone()
     cursor.close()
