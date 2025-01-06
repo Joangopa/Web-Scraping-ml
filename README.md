@@ -33,7 +33,7 @@ pip install -r requirements.txt
    ```
    - Substitua `SEU_TOKEN_DO_TELEGRAM` com o token do seu bot.
    - Substitua `SEU_CHAT_ID` com o ID do chat onde você deseja receber notificações.
-       O ID do chat pode ser achado em: https://api.telegram.org/bot<seu-token>/getUpdates
+       O ID do chat pode ser achado em: `https://api.telegram.org/bot<seu-token>/getUpdates`
 
 3. **Configuração do Banco de Dados**: O banco de dados SQLite será criado automaticamente na primeira execução.
 
